@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>40점 기준 최소 성취수준 계산기</title>
+  <script>
+    function calcNeededScore40() {
+      const sStr = document.getElementById('scorePerform40').value.trim();
+
+      if (sStr === '') {
+        alert('수행평가 점수를 입력하세요.');
+        return;
+      }
+
+      const s = Number(sStr);
+      if (isNaN(s) || s < 0 || s > 40) {
+        alert('수행평가 점수는 0~40점 사이의 숫자로 입력하세요.');
+        return;
+      }
+
+      // ★ 여기만 40점 기준으로 변경합니다.
+      const cutoffTotal = 40;   // 목표 총점 40점
+      const examPortion = 60;   // 지필 비중 60점 (변함 없음)
+
+      const neededExamPart = cutoffTotal - s; // 지필에서 가져와야 할 점수(60점 만점 중)
+      let message = '';
+
+      if (neededExamPart <= 0) {
+        message =
+          '현재 수행평가 점수 ' + s + '점이면,\n' +
+          '지필 평균이 0점이라도 총점 40점을 넘기므로\n' +
+          '40점 기준 최소 성취수준을 이미 충족한 상태입니다.';
+      } else {
+        // 지필(1,2차) 평균 점수(100점 만점 기준)
+        const neededAvg = neededExamPart / examPortion * 100;
+
+        message =
+          '현재 수행평가 점수: ' + s + '점 (40점 만점)\n\n' +
+          '총점 40점을 넘기기 위해서는\n' +
+          '1, 2차 지필평가 평균이 최소\n' +
+          neededAvg.toFixed(1) + '점 이상(100점 만점 기준)\n' +
+          '이어야 합니다.';
+      }
+
+      alert(message);
+    }
+  </script>
+</head>
+<body>
+  <h2>40점 기준 최소 성취수준 계산기</h2>
+  <p>수행평가 40%, 지필(1·2차) 60% 기준</p>
+  <label for="scorePerform40">
+    수행평가 총점(40점 만점)을 입력하세요:
+  </label>
+  <input type="number" id="scorePerform40" min="0" max="40" step="0.1">
+  <button onclick="calcNeededScore40()">확인</button>
+  <p>※ 이 계산기는 브라우저에서만 계산하며, 입력값은 저장되지 않습니다.</p>
+</body>
+</html>
