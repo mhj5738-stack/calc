@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <title>40점 기준 최소 성취수준 계산기</title>
   <script>
-    function calcNeededScore40() {
+    // ① 수행 + 지필 평균으로 최소 성취(40점) 도달에 필요한 지필 "평균" 계산
+    function calcNeededAvg40() {
       const sStr = document.getElementById('scorePerform40').value.trim();
 
       if (sStr === '') {
@@ -18,28 +19,101 @@
         return;
       }
 
-      // ★ 여기만 40점 기준으로 변경합니다.
-      const cutoffTotal = 40;   // 목표 총점 40점
-      const examPortion = 60;   // 지필 비중 60점 (변함 없음)
+      const cutoffTotal = 40;   // 최소 성취 기준 총점(40점)
+      const examPortion = 60;   // 지필 반영 최대 점수(60점)
 
-      const neededExamPart = cutoffTotal - s; // 지필에서 가져와야 할 점수(60점 만점 중)
+      const neededExamPart = cutoffTotal - s; // 지필에서 채워야 할 점수(60점 만점 중)
       let message = '';
 
       if (neededExamPart <= 0) {
         message =
           '현재 수행평가 점수 ' + s + '점이면,\n' +
           '지필 평균이 0점이라도 총점 40점을 넘기므로\n' +
-          '40점 기준 최소 성취수준을 이미 충족한 상태입니다.';
+          '최소 성취 수준(40점)에 이미 도달한 상태입니다.';
       } else {
-        // 지필(1,2차) 평균 점수(100점 만점 기준)
         const neededAvg = neededExamPart / examPortion * 100;
 
         message =
           '현재 수행평가 점수: ' + s + '점 (40점 만점)\n\n' +
-          '총점 40점을 넘기기 위해서는\n' +
+          '최소 성취 수준(40점)에 도달하기 위해서는\n' +
           '1, 2차 지필평가 평균이 최소\n' +
           neededAvg.toFixed(1) + '점 이상(100점 만점 기준)\n' +
-          '이어야 합니다.';
+          '이어야 합니다.\n\n' +
+          '*40점 미만(0~39점)은 최소 성취 수준 미도달입니다.';
+      }
+
+      alert(message);
+    }
+
+    // ② 수행 + 1차 점수를 기반으로 2차에서 필요한 최소 점수 계산
+    function calcNeededSecond40() {
+      const sStr = document.getElementById('scorePerform40').value.trim();
+      const mStr = document.getElementById('scoreMid40').value.trim();
+
+      if (sStr === '' || mStr === '') {
+        alert('수행평가 점수와 1차고사 점수를 모두 입력하세요.');
+        return;
+      }
+
+      const s = Number(sStr);  // 수행(40점 만점)
+      const m = Number(mStr);  // 1차(100점 만점)
+
+      if (isNaN(s) || s < 0 || s > 40) {
+        alert('수행평가 점수는 0~40점 사이의 숫자로 입력하세요.');
+        return;
+      }
+      if (isNaN(m) || m < 0 || m > 100) {
+        alert('1차고사 점수는 0~100점 사이의 숫자로 입력하세요.');
+        return;
+      }
+
+      const cutoffTotal = 40;   // 최소 성취 기준 총점(40점)
+      const examPortion = 60;   // 지필 반영 최대 점수(60점)
+      const perTestWeight = examPortion / 100 / 2;  // 시험 1회당 반영 비율(60%/2=30% → 0.3)
+
+      const neededExamPartTotal = cutoffTotal - s;  // 지필에서 필요로 하는 반영 점수(60점 만점 중)
+
+      let message = '';
+
+      if (neededExamPartTotal <= 0) {
+        message =
+          '수행평가 점수 ' + s + '점만으로도 총점 40점을 넘기므로,\n' +
+          '2차고사 점수가 0점이더라도 최소 성취 수준(40점)에 도달합니다.';
+        alert(message);
+        return;
+      }
+
+      const midtermPart = m * perTestWeight;              // 1차고사 기여분
+      const remainingExamPart = neededExamPartTotal - midtermPart; // 2차에서 채워야 할 분량
+
+      if (remainingExamPart <= 0) {
+        message =
+          '수행평가 ' + s + '점, 1차고사 ' + m + '점이면,\n' +
+          '2차고사 점수가 0점이어도 총점 40점 이상이므로\n' +
+          '최소 성취 수준(40점)에 이미 도달합니다.';
+        alert(message);
+        return;
+      }
+
+      const requiredSecond = remainingExamPart / perTestWeight; // 남은 반영점수 / 0.3
+      const requiredSecondCeil = Math.ceil(requiredSecond);     // 최소 몇 점 → 올림
+
+      if (requiredSecondCeil > 100) {
+        message =
+          '수행평가 ' + s + '점, 1차고사 ' + m + '점인 경우,\n' +
+          '2차고사에서 100점을 받아도 총점 40점에 도달하지 못합니다.\n' +
+          '→ 최소 성취 수준(40점) 도달이 불가능한 조합입니다.';
+      } else if (requiredSecondCeil <= 0) {
+        message =
+          '수행평가 ' + s + '점, 1차고사 ' + m + '점이면,\n' +
+          '2차고사 점수가 0점이어도 총점 40점 이상입니다.\n' +
+          '이미 최소 성취 수준(40점)에 도달해 있습니다.';
+      } else {
+        message =
+          '수행평가 ' + s + '점, 1차고사 ' + m + '점인 경우,\n\n' +
+          '2차고사에서 **최소 ' + requiredSecondCeil + '점 이상**(100점 만점 기준)을 받아야\n' +
+          '총점 40점 이상이 되어 최소 성취 수준(40점)에 도달합니다.\n\n' +
+          '*40점 미만(0~39점)은 최소 성취 수준 미도달입니다.';
       }
 
       alert(message);
@@ -49,11 +123,30 @@
 <body>
   <h2>40점 기준 최소 성취수준 계산기</h2>
   <p>수행평가 40%, 지필(1·2차) 60% 기준</p>
-  <label for="scorePerform40">
-    수행평가 총점(40점 만점)을 입력하세요:
-  </label>
-  <input type="number" id="scorePerform40" min="0" max="40" step="0.1">
-  <button onclick="calcNeededScore40()">확인</button>
-  <p>※ 이 계산기는 브라우저에서만 계산하며, 입력값은 저장되지 않습니다.</p>
+
+  <div style="margin-bottom: 1em;">
+    <label for="scorePerform40">
+      수행평가 총점(40점 만점)을 입력하세요:
+    </label>
+    <input type="number" id="scorePerform40" min="0" max="40" step="0.1">
+  </div>
+
+  <button onclick="calcNeededAvg40()">① 최소 성취(40점) 도달에 필요한 지필 평균 계산</button>
+
+  <hr>
+
+  <div style="margin-top: 1em;">
+    <label for="scoreMid40">
+      1차고사 점수(100점 만점)를 입력하세요:
+    </label>
+    <input type="number" id="scoreMid40" min="0" max="100" step="0.1">
+  </div>
+
+  <button onclick="calcNeededSecond40()">② 최소 성취(40점) 도달에 필요한 2차고사 점수 계산</button>
+
+  <p style="margin-top: 1em; font-size: 0.9em;">
+    ※ 이 계산기는 브라우저에서만 계산하며, 입력값은 저장되지 않습니다.<br>
+    ※ 40점 미만(0~39점)은 최소 성취 수준 미도달입니다.
+  </p>
 </body>
 </html>
